@@ -18,7 +18,8 @@ EN = {"багги": ("Buggy", "4x4, steering from the axle, open V8, winch and s
       "рука": ("Robot arm", "shoulder on a linear actuator with an M motor, gripper on an L motor"),
       "шагающий": ("Walker", "four legs on Hoekens linkages driven by one XL motor"),
       "часы": ("Pendulum clock", "a falling weight, an escapement and a pendulum, minute hand")}
-BADGES = ("[![Status](https://img.shields.io/badge/status-0.1.0_not_released-orange)](CHANGELOG.md) "
+BADGES = ("[![Status](https://img.shields.io/badge/status-0.1.0-brightgreen)](CHANGELOG.md) "
+          "[![Release](https://img.shields.io/github/v/release/ALEXalesha/TechnicLab)](https://github.com/ALEXalesha/TechnicLab/releases/latest) "
           "[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE) "
           "[![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](https://www.python.org/) "
           "[![LDraw](https://img.shields.io/badge/LDraw-parts-yellow)](https://www.ldraw.org/) "
@@ -70,6 +71,7 @@ def main():
         ru.append("| %s | **%s** - %s | %d | %s | ~%s |" % (img, spec["title"], spec["subtitle"][0].lower() + spec["subtitle"][1:], n, pages, t))
     en += ["", "Total: %d parts in %d models. Build time assumes about 2 parts a minute." % (total_p, len(rows)), "",
            "## Instructions", "",
+           "Ready PDFs (12 files, six models in two sizes) - in [Releases](https://github.com/ALEXalesha/TechnicLab/releases/latest).", "",
            "`python ядро/instructions.py` builds two PDFs per model into its folder:",
            "- **iPad mini** - one page is exactly the iPad mini 7 screen in full-screen view, so the 1:1 pages at the end",
            "  show axles and beams at their real length;",
@@ -90,6 +92,7 @@ def main():
            "- `архив/` - earlier versions and sketches.", "", "## License", "", "[MIT](LICENSE)", ""]
     ru += ["", "Всего %d деталей в %d моделях. Время сборки - примерно 2 детали в минуту." % (total_p, len(rows)), "",
            "## Инструкции", "",
+           "Готовые PDF (12 файлов, шесть моделей в двух размерах) - в [Releases](https://github.com/ALEXalesha/TechnicLab/releases/latest).", "",
            "`python ядро/instructions.py` кладёт в папку каждой модели два PDF:",
            "- **iPad mini** - страница ровно равна экрану iPad mini 7 во весь экран, поэтому листы 1:1 в конце показывают",
            "  оси и балки в натуральную длину;",

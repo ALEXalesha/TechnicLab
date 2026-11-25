@@ -7,7 +7,7 @@
 
 [English](README.md)
 
-[![Status](https://img.shields.io/badge/status-0.1.0_not_released-orange)](CHANGELOG.md) [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE) [![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](https://www.python.org/) [![LDraw](https://img.shields.io/badge/LDraw-parts-yellow)](https://www.ldraw.org/) [![Built with Claude Code](https://img.shields.io/badge/Built_with-Claude_Code-D97757?logo=claude&logoColor=white)](https://claude.com/claude-code)
+[![Status](https://img.shields.io/badge/status-0.1.0-brightgreen)](CHANGELOG.md) [![Release](https://img.shields.io/github/v/release/ALEXalesha/TechnicLab)](https://github.com/ALEXalesha/TechnicLab/releases/latest) [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE) [![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](https://www.python.org/) [![LDraw](https://img.shields.io/badge/LDraw-parts-yellow)](https://www.ldraw.org/) [![Built with Claude Code](https://img.shields.io/badge/Built_with-Claude_Code-D97757?logo=claude&logoColor=white)](https://claude.com/claude-code)
 
 </div>
 
@@ -30,6 +30,8 @@ LEGO - товарный знак LEGO Group, она его не спонсиру
 Всего 1038 деталей в 6 моделях. Время сборки - примерно 2 детали в минуту.
 
 ## Инструкции
+
+Готовые PDF (12 файлов, шесть моделей в двух размерах) - в [Releases](https://github.com/ALEXalesha/TechnicLab/releases/latest).
 
 `python ядро/instructions.py` кладёт в папку каждой модели два PDF:
 - **iPad mini** - страница ровно равна экрану iPad mini 7 во весь экран, поэтому листы 1:1 в конце показывают

@@ -7,7 +7,7 @@ every motor has power; then the code renders step-by-step PDF instructions for a
 
 [Русский](README.ru.md)
 
-[![Status](https://img.shields.io/badge/status-0.1.0_not_released-orange)](CHANGELOG.md) [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE) [![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](https://www.python.org/) [![LDraw](https://img.shields.io/badge/LDraw-parts-yellow)](https://www.ldraw.org/) [![Built with Claude Code](https://img.shields.io/badge/Built_with-Claude_Code-D97757?logo=claude&logoColor=white)](https://claude.com/claude-code)
+[![Status](https://img.shields.io/badge/status-0.1.0-brightgreen)](CHANGELOG.md) [![Release](https://img.shields.io/github/v/release/ALEXalesha/TechnicLab)](https://github.com/ALEXalesha/TechnicLab/releases/latest) [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE) [![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](https://www.python.org/) [![LDraw](https://img.shields.io/badge/LDraw-parts-yellow)](https://www.ldraw.org/) [![Built with Claude Code](https://img.shields.io/badge/Built_with-Claude_Code-D97757?logo=claude&logoColor=white)](https://claude.com/claude-code)
 
 </div>
 
@@ -30,6 +30,8 @@ trademark of the LEGO Group, which does not sponsor or endorse it.
 Total: 1038 parts in 6 models. Build time assumes about 2 parts a minute.
 
 ## Instructions
+
+Ready PDFs (12 files, six models in two sizes) - in [Releases](https://github.com/ALEXalesha/TechnicLab/releases/latest).
 
 `python ядро/instructions.py` builds two PDFs per model into its folder:
 - **iPad mini** - one page is exactly the iPad mini 7 screen in full-screen view, so the 1:1 pages at the end
