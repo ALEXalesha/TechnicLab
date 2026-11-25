@@ -541,3 +541,12 @@ def test_pins_wait_between_frame_and_beam():
             break
     else:
         raise AssertionError("нет шага")
+
+
+def test_technic_brick_axis_is_holes():
+    """Кирпич Technic ставится вдоль дырок (на штифты), а не вдоль шипов; плитка без дырок - вдоль шипов."""
+    import instructions as ins
+    u = ins._axis(ldr.Part("3703.dat", 0, (0, 0, 0)))
+    assert abs(u[1]) < 0.1 and abs(u[2]) > 0.9, u
+    u = ins._axis(ldr.Part("3710.dat", 0, (0, 0, 0)))          # плитка 1x4 - только шипы
+    assert u is None or abs(u[1]) > 0.9, u

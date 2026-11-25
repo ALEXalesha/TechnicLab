@@ -113,7 +113,11 @@ def _axis(p):
     """Ось, вдоль которой деталь ставится: самое частое направление её отверстий и штифтов (в мире)."""
     import snaps
     cnt = collections.Counter()
-    for c_ in snaps.part_snaps(p):
+    all_ = snaps.part_snaps(p)
+    # дырки и штифты Technic (длина соединения 8+ LDU) важнее шипов (4 LDU): кирпич 1x16 садится на штифты сбоку, а не
+    # сверху (Алексей 25.11, шаг 13 багги - кирпич прилетал сверху)
+    tech = [c_ for c_ in all_ if sum(x[2] for x in c_.secs) >= 8]
+    for c_ in (tech or all_):
         d = c_._raw()
         n = (d[0] ** 2 + d[1] ** 2 + d[2] ** 2) ** 0.5
         if n < 1e-6:
