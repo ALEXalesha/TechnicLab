@@ -347,7 +347,7 @@ def _chunks(parts):
 
 def pages(model):
     """Последовательность страниц: (узел, заголовок, все детали кадра, новые детали, метки, вид, PLI-элементы)."""
-    steps = [s for s in model.steps if s.parts]
+    steps = [s for s in model.steps if s.parts or s.attach]        # шаг «поставь узел» - и без своих деталей
     full = [p for s in steps for p in s.parts]
     subs = collections.OrderedDict()
     for s in steps:
@@ -365,7 +365,7 @@ def pages(model):
                 out.append((s.sub, s.title, list(sub_done[s.sub]), ch, anchors, lon, ch))
         else:
             first = True
-            for ch in _chunks(s.parts):
+            for ch in (_chunks(s.parts) if s.parts else [[]]):
                 new = list(ch)
                 pli = list(ch)
                 if first:

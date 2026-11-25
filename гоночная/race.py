@@ -36,6 +36,9 @@ def _strip(m):
         if st.sub == "Передний мост" and st.title.startswith(("Мост передний", "Ведущая")):
             st.parts = [p for p in st.parts if p.name == "64179.dat"]      # рамка остаётся, шестерни - нет
             st.title = "Мост передний: рамка (без привода)"
+        if st.title.startswith("Поставь оба моста"):     # задний мост у гоночной свой (ставится позже)
+            st.attach = ["Передний мост"]
+            st.title = "Поставь передний мост"
         if st.title.startswith("Мотор XL и лонжероны"):
             st.parts = [p for p in st.parts if p.name != "58121c01.dat" and not (p.name == "6558.dat" and abs(abs(p.pos[0]) - 60) < 1)]
             st.title = "Лонжероны"

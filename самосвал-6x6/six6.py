@@ -158,7 +158,7 @@ def build():
     m = car.build()
     body.build_body(m)
     receivers_on_pillars(m)
-    m.steps = [st for st in m.steps if st.parts]
+    m.steps = [st for st in m.steps if st.parts or st.attach]     # шаг «поставь мосты» - без своих деталей
     _drop(m, lambda p: p.name == car.AXLE[5] and abs(p.pos[2] - 65) < 1 and abs(p.pos[1] - car.SHAFT_Y) < 1)
     axle2(m)
     frame_and_shocks(m)

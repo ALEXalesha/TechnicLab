@@ -478,3 +478,15 @@ def test_view_anchor_draws_nothing():
     cross = [ab[1] * ac[2] - ab[2] * ac[1], ab[2] * ac[0] - ab[0] * ac[2], ab[0] * ac[1] - ab[1] * ac[0]]
     assert max(abs(x) for x in cross) < 1e-9
     assert max(abs(x) for x in v) > 0          # но точки есть - LDView по ним кадрирует
+
+
+def test_every_subassembly_attached_once():
+    """Каждый узел, собранный отдельно, ставится в основную сборку ровно одним шагом (25.11: самосвал выкинул пустой
+    шаг «Поставь оба моста» - мосты собирались, но в машину не ставились)."""
+    import collections
+    import instructions as ins
+    for key in ins.MODELS:
+        pg = ins.pages(ins.build_model(key))
+        built = {x[0] for x in pg if x[0]}
+        put = collections.Counter(q.name[7:] for x in pg if not x[0] for q in x[6] if q.name.startswith("__sub__"))
+        assert set(put) == built and all(v == 1 for v in put.values()), (key, built, dict(put))
