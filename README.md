@@ -20,11 +20,11 @@ trademark of the LEGO Group, which does not sponsor or endorse it.
 
 | | Model | Parts | Pages | Build time |
 | --- | --- | --- | --- | --- |
-| <img src="%D0%B1%D0%B0%D0%B3%D0%B3%D0%B8/%D0%B1%D0%B0%D0%B3%D0%B3%D0%B8-v3.png" width="220"> | **Buggy** - 4x4, steering from the axle, open V8, winch and spare wheel | 285 | 75 | ~2 h 30 min |
-| <img src="%D1%81%D0%B0%D0%BC%D0%BE%D1%81%D0%B2%D0%B0%D0%BB-6x6/%D1%81%D0%B0%D0%BC%D0%BE%D1%81%D0%B2%D0%B0%D0%BB-v2.png" width="220"> | **Dump truck 6x6** - six wheels, a hinged bed with sides, V8 and steering | 372 | 96 | ~3 h 00 min |
-| <img src="%D0%B3%D0%BE%D0%BD%D0%BE%D1%87%D0%BD%D0%B0%D1%8F/%D0%B3%D0%BE%D0%BD%D0%BE%D1%87%D0%BD%D0%B0%D1%8F-v2.png" width="220"> | **Racer** - low tyres, streamlined hood, rear drive with a step-up gear pair | 229 | 58 | ~2 h 00 min |
+| <img src="%D0%B1%D0%B0%D0%B3%D0%B3%D0%B8/%D0%B1%D0%B0%D0%B3%D0%B3%D0%B8-v3.png" width="220"> | **Buggy** - 4x4, steering from the axle, open V8, winch and spare wheel | 285 | 76 | ~2 h 30 min |
+| <img src="%D1%81%D0%B0%D0%BC%D0%BE%D1%81%D0%B2%D0%B0%D0%BB-6x6/%D1%81%D0%B0%D0%BC%D0%BE%D1%81%D0%B2%D0%B0%D0%BB-v2.png" width="220"> | **Dump truck 6x6** - six wheels, a hinged bed with sides, V8 and steering | 372 | 98 | ~3 h 00 min |
+| <img src="%D0%B3%D0%BE%D0%BD%D0%BE%D1%87%D0%BD%D0%B0%D1%8F/%D0%B3%D0%BE%D0%BD%D0%BE%D1%87%D0%BD%D0%B0%D1%8F-v2.png" width="220"> | **Racer** - low tyres, streamlined hood, rear drive with a step-up gear pair | 229 | 59 | ~2 h 00 min |
 | <img src="%D1%80%D1%83%D0%BA%D0%B0/%D1%80%D1%83%D0%BA%D0%B0-v3.png" width="220"> | **Robot arm** - shoulder on a linear actuator with an M motor, gripper on an L motor | 44 | 15 | ~15 min |
-| <img src="%D1%88%D0%B0%D0%B3%D0%B0%D1%8E%D1%89%D0%B8%D0%B9/%D1%88%D0%B0%D0%B3%D0%B0%D1%8E%D1%89%D0%B8%D0%B9-v2.png" width="220"> | **Walker** - four legs on Hoekens linkages driven by one XL motor | 80 | 20 | ~45 min |
+| <img src="%D1%88%D0%B0%D0%B3%D0%B0%D1%8E%D1%89%D0%B8%D0%B9/%D1%88%D0%B0%D0%B3%D0%B0%D1%8E%D1%89%D0%B8%D0%B9-v2.png" width="220"> | **Walker** - four legs on Hoekens linkages driven by one XL motor | 80 | 19 | ~45 min |
 | <img src="%D1%87%D0%B0%D1%81%D1%8B/%D1%87%D0%B0%D1%81%D1%8B-v1.png" width="220"> | **Pendulum clock** - a falling weight, an escapement and a pendulum, minute hand | 28 | 11 | ~15 min |
 
 Total: 1038 parts in 6 models. Build time assumes about 2 parts a minute.
