@@ -393,6 +393,12 @@ def _count_pages(fn, *args):
     return d.getPageNumber() - n0
 
 
+def count_parts(model):
+    """Сколько деталей покупать/ставить: без V8 Алексея (готовый узел) и без верёвки (NOT_PARTS). Одно число для
+    обложки и README."""
+    return sum(1 for p in model.parts() if p.name != "v4.ldr" and p.name not in NOT_PARTS)
+
+
 COVER_COL = 45 * mm     # ширина колонки фактов на обложке (картинка - с 54 мм)
 
 
@@ -452,7 +458,7 @@ def build_pdf(model, out_pdf, spec):
     c.setTitle(title + " - инструкция")
     c.setAuthor("TechnicLab")
     full = [p for s in model.steps for p in s.parts]
-    n_parts = sum(1 for p in full if p.name != "v4.ldr")
+    n_parts = count_parts(model)
     n_pages = 1 + len(pg) + (1 if spec.get("wiring") else 0) + _count_pages(inventory, full) + _count_pages(scale_page)
     elec = collections.Counter(ELECTRIC[p.name] for p in full if p.name in ELECTRIC)
     facts = [("Деталей", str(n_parts)), ("Шагов / страниц", "%d / %d" % (len(pg), n_pages)),

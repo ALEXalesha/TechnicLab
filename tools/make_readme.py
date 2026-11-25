@@ -33,7 +33,7 @@ def stats():
     rows = []
     for key in ins.MODELS:
         m = ins.build_model(key)
-        n = sum(1 for p in m.parts() if p.name != "v4.ldr" and p.name not in ins.NOT_PARTS)
+        n = ins.count_parts(m)
         pdf = os.path.join(paths.folder(key), "%s - инструкция (iPad mini).pdf" % ins.MODELS[key]["title"])
         pages = "?"
         if os.path.exists(pdf):

@@ -422,3 +422,13 @@ def test_cover_facts_fit_column():
         lines = ins.wrap(text, "AB", 11, ins.COVER_COL)
         assert ", ".join(x.rstrip(",") for x in lines).replace(",,", ",") == text
         assert all(ins.pdfmetrics.stringWidth(x, "AB", 11) <= ins.COVER_COL for x in lines)
+
+
+def test_part_count_skips_rope():
+    """Число деталей на обложке и в README одно и то же и без верёвки (25.11: обложка часов считала трос деталью)."""
+    import instructions as ins
+    import clock
+    m = clock.build()
+    rope = sum(1 for p in m.parts() if p.name in ins.NOT_PARTS)
+    assert rope >= 1
+    assert ins.count_parts(m) == sum(1 for p in m.parts() if p.name != "v4.ldr") - rope
