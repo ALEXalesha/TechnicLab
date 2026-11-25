@@ -516,3 +516,28 @@ def test_far_beam_not_pushed_through_frame():
             break
     else:
         raise AssertionError("нет шага")
+
+
+def test_pins_wait_between_frame_and_beam():
+    """Багги, «Удлинители лонжеронов сзади»: штифт с буртиком не пройдёт сквозь балку 11 - балка ждёт ДАЛЬШЕ штифтов
+    (сначала штифты в лонжерон, потом балка на них), и обе балки отодвинуты (Алексей 25.11)."""
+    import instructions as ins
+    m = ins.build_model("багги")
+    for sub, ttl, cum, new, anc, lon, pli in ins.pages(m):
+        if ttl.startswith("Удлинители лонжеронов сзади"):
+            ex, _ = ins.explode(cum, new, 28, lon, {id(q) for q in pli})
+            moved = ex[len(cum) - len(new):]
+            for sg in (1, -1):
+                beam = [e for e in moved if e.name == "32525.dat" and e.pos[0] * sg > 0]
+                pins = [e for e in moved if e.name == "2780.dat" and e.pos[0] * sg > 0]
+                assert len(beam) == 1 and len(pins) == 2
+                b = beam[0].world_bbox()
+                inner = b[0][0] if sg > 0 else -b[1][0]
+                assert abs(beam[0].pos[0]) > 90 + 20, beam[0].pos               # балка не стоит на месте
+                for q in pins:
+                    qb = q.world_bbox()
+                    outer = qb[1][0] if sg > 0 else -qb[0][0]
+                    assert outer < inner, (q.pos, beam[0].pos)                  # штифт целиком до балки
+            break
+    else:
+        raise AssertionError("нет шага")

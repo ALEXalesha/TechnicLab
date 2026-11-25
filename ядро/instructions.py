@@ -227,12 +227,18 @@ def explode(cum, new, lat=28, lon=-40, single=None):
             parts.append(ldr.Part(p.name, p.color, [p.pos[0], p.pos[1] - lift, p.pos[2]], p.rot))
         top = [(lo[0] + hi[0]) / 2, lo[1] - 6, (lo[2] + hi[2]) / 2]
         raw += _arrow(top, [0, -1, 0], lift - 12, _cam(lat, lon))
+    plan = []
     for p in new:
         if group and id(p) not in single:
             continue
         bb = p.world_bbox()
         small = p.name in car.PINS or p.name in AXLE_LEN or p.name in SMALL
-        move = small or (old and p is not biggest)              # основу шага не двигаем, если ставить её не на что
+        # основу шага не двигаем, если ставить её не на что; но если она садится на новые штифты - она едет за ними:
+        # штифт с буртиком сквозь уже стоящую балку не пройдёт (Алексей 25.11)
+        on_pins = bb and any(id(q) != id(p) and (q.name in car.PINS or q.name in SMALL) and q.world_bbox() and
+                             all(min(bb[1][i], q.world_bbox()[1][i]) - max(bb[0][i], q.world_bbox()[0][i]) > 1 for i in range(3))
+                             for q in new)
+        move = small or (old and (p is not biggest or on_pins))
         u = _axis(p) if bb and move and not p.name.endswith(".ldr") else None
         if u is None:
             parts.append(p)
@@ -250,6 +256,8 @@ def explode(cum, new, lat=28, lon=-40, single=None):
         side = insert_side(p, bb, u, boxes, new_boxes, mid)
         if side is not None:       # но сторона, откуда деталь реально ставится, важнее вида
             uu = [side * x for x in u]
+        plan.append([p, bb, uu, half, d, cam])
+    for p, bb, uu, half, d, cam in stack(plan):
         parts.append(ldr.Part(p.name, p.color, [p.pos[i] + uu[i] * d for i in range(3)], p.rot))
         # как в оригинале LEGO: линия идёт от детали сквозь место установки (видна в дырке) и выходит с другой стороны
         tip = [p.pos[i] - uu[i] * (half + 22) for i in range(3)]
@@ -257,6 +265,28 @@ def explode(cum, new, lat=28, lon=-40, single=None):
         if length > 24:
             raw += _arrow(tip, uu, length, cam)
     return parts, raw
+
+
+def _along(bb, uu):
+    """Отрезок детали вдоль направления uu (по главной оси)."""
+    k = max(range(3), key=lambda i: abs(uu[i]))
+    return (bb[0][k], bb[1][k]) if uu[k] > 0 else (-bb[1][k], -bb[0][k])
+
+
+def stack(plan, gap=20, dmax=400):
+    """Порядок установки вдоль одного направления: что ставится раньше (ближе к месту), отодвинуто меньше. Деталь,
+    которая в собранном виде дальше по направлению и перекрывает другую поперёк, ждёт за ней с зазором: штифты -
+    между лонжероном и балкой 11, а не за балкой (иначе штифт с буртиком упрётся в балку)."""
+    plan = sorted(plan, key=lambda t: sum(_along(t[1], t[2])))
+    for j, (pj, bj, uj, _, dj, _) in enumerate(plan):
+        k = max(range(3), key=lambda i: abs(uj[i]))
+        for pi, bi, ui, _, di, _ in plan[:j]:
+            if sum(ui[x] * uj[x] for x in range(3)) < 0.99:
+                continue
+            if all(min(bi[1][x], bj[1][x]) - max(bi[0][x], bj[0][x]) > 1 for x in range(3) if x != k):
+                dj = max(dj, _along(bi, ui)[1] + di + gap - _along(bj, uj)[0])
+        plan[j][4] = min(dmax, dj)
+    return plan
 
 
 def _content_bbox(im):
