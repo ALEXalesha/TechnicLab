@@ -43,6 +43,12 @@ BEAM_LEN = {v: k for k, v in car.BEAM.items()}
 BODY = {"58121c01.dat": "58121.dat", "58120c01.dat": "58120.dat"}
 # свой ракурс узла: (широта, долгота). Лебёдку видно снизу-спереди-справа: червяк, катушка и направляющая троса
 SUB_VIEW = {"Лебёдка": (-18, 35)}
+# свой ракурс шага (по началу заголовка): валы вдоль машины видно только сбоку (Алексей 25.11: шаг 7 багги мелкий)
+STEP_VIEW = {"Центральный дифференциал и валы": (35, -100)}
+
+
+def step_view(title):
+    return next((v for k, v in STEP_VIEW.items() if title.startswith(k)), None)
 # метка вида - крошечный белый треугольник: линии (тип 2) LDView в габарит не берёт и кадрирует по деталям -
 # тогда кадр меток стрелок и кадр шага расходились («стрелки мимо», Алексей 25.11)
 ANCHOR = ["", "0 FILE anchor.ldr", "0 anchor", "3 15 0 0 0 0.01 0 0 0.02 0 0", ""]
@@ -375,7 +381,8 @@ def pages(model):
                 first = False
                 main_done += new
                 rear = sum(p.pos[2] > 60 for p in ch) > len(ch) / 2
-                out.append(("", s.title, list(main_done), new, _anchors(full), 140 if rear else -40, pli))
+                sv = step_view(s.title)
+                out.append(("", s.title, list(main_done), new, _anchors(full), sv[1] if sv else (140 if rear else -40), pli))
     return out
 
 
@@ -506,7 +513,7 @@ def build_pdf(model, out_pdf, spec):
     for k, (sub, ttl, cum, new, anchors, lon, pli) in enumerate(pg, 1):
         base = os.path.join(WORK, "p%03d" % k)
         _write(base + "c.ldr", cum, anchors, subs_v4)
-        lat = SUB_VIEW.get(sub, (28, 0))[0]
+        lat = (step_view(ttl) or SUB_VIEW.get(sub, (28, 0)))[0]
         ex_parts, ex_raw = explode(cum, new, lat, lon, {id(q) for q in pli})
         # метки вида шага охватывают и отодвинутые детали: кадр шага и кадр меток стрелок кадрируются одинаково
         bx = _anchors(ex_parts, pad=10)

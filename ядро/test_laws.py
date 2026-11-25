@@ -490,3 +490,12 @@ def test_every_subassembly_attached_once():
         built = {x[0] for x in pg if x[0]}
         put = collections.Counter(q.name[7:] for x in pg if not x[0] for q in x[6] if q.name.startswith("__sub__"))
         assert set(put) == built and all(v == 1 for v in put.values()), (key, built, dict(put))
+
+
+def test_step_view_applies():
+    """Шаг «Центральный дифференциал и валы» снимается сбоку - и у багги, и у самосвала."""
+    import instructions as ins
+    for key in ("багги", "самосвал-6x6"):
+        pg = ins.pages(ins.build_model(key))
+        x = [x for x in pg if x[1].startswith("Центральный дифференциал и валы")]
+        assert x and all(t[5] == ins.STEP_VIEW["Центральный дифференциал и валы"][1] for t in x), key
