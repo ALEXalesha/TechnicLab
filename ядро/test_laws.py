@@ -432,3 +432,49 @@ def test_part_count_skips_rope():
     rope = sum(1 for p in m.parts() if p.name in ins.NOT_PARTS)
     assert rope >= 1
     assert ins.count_parts(m) == sum(1 for p in m.parts() if p.name != "v4.ldr") - rope
+
+
+def test_explode_moves_part_to_its_insert_side():
+    """Штифт торчит из балки НАЗАД (от камеры): в инструкции он должен ждать сзади, а не спереди сквозь балку
+    (Алексей 25.11: «детали не соединятся так, они должны быть с другой стороны балки»)."""
+    import instructions as ins
+    beam = ldr.Part(car.BEAM[5], 0, (0, 0, 0), car.ROT[("x", "z")])
+    for z, sign in ((10, 1), (-10, -1)):
+        pin = ldr.Part("2780.dat", 0, (0, 0, z), ldr.ry(90))
+        assert ins._free_side(pin.world_bbox(), [0, 0, 1], [beam.world_bbox()]) == sign
+        parts, _ = ins.explode([beam, pin], [pin], 28, -40)
+        moved = [p for p in parts if p.name == "2780.dat"][0]
+        assert (moved.pos[2] - z) * sign > 20, (z, moved.pos)
+
+
+def test_sub_box_above_caption():
+    """Рамка узла в списке деталей не заходит на подпись шага ни на одной странице (25.11: «1x Передний мост» на тексте)."""
+    import collections
+    import os
+    import instructions as ins
+    from reportlab.pdfgen import canvas
+    for key in ins.MODELS:
+        m = ins.build_model(key)
+        for sub, ttl, cum, new, anchors, lon, pli in ins.pages(m):
+            cnt = collections.Counter((p.name, p.color) for p in pli if p.name not in ins.NOT_PARTS)
+            c = canvas.Canvas(os.devnull, pagesize=(ins.W, ins.H))
+            h, _ = ins._draw_pli(c, sorted(cnt.items(), key=lambda x: -x[1]), 6 * ins.mm, ins.H - 17 * ins.mm, 62 * ins.mm)
+            y = ins.H - 17 * ins.mm - h - 2 * ins.mm
+            for name, _ in cnt:
+                if name.startswith("__sub__"):
+                    hb = ins.sub_box_h(y)
+                    assert y - hb >= ins.CAPTION_TOP - 0.01, (key, ttl)
+                    y -= hb + 2 * ins.mm
+
+
+def test_view_anchor_draws_nothing():
+    """Метка рамки кадра - треугольник НУЛЕВОЙ площади: рядом с камерой треугольник 0,3 LDU раздувался в серый
+    «зигзаг» на полстраницы (25.11, багги стр. 13, 16, 17)."""
+    import instructions as ins
+    v = [float(x) for x in ins.ANCHOR[3].split()[2:]]
+    a, b, c = v[0:3], v[3:6], v[6:9]
+    ab = [b[i] - a[i] for i in range(3)]
+    ac = [c[i] - a[i] for i in range(3)]
+    cross = [ab[1] * ac[2] - ab[2] * ac[1], ab[2] * ac[0] - ab[0] * ac[2], ab[0] * ac[1] - ab[1] * ac[0]]
+    assert max(abs(x) for x in cross) < 1e-9
+    assert max(abs(x) for x in v) > 0          # но точки есть - LDView по ним кадрирует

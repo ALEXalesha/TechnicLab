@@ -45,7 +45,7 @@ BODY = {"58121c01.dat": "58121.dat", "58120c01.dat": "58120.dat"}
 SUB_VIEW = {"Лебёдка": (-18, 35)}
 # метка вида - крошечный белый треугольник: линии (тип 2) LDView в габарит не берёт и кадрирует по деталям -
 # тогда кадр меток стрелок и кадр шага расходились («стрелки мимо», Алексей 25.11)
-ANCHOR = ["", "0 FILE anchor.ldr", "0 anchor", "3 15 0 0 0 0.3 0 0 0 0.3 0", ""]
+ANCHOR = ["", "0 FILE anchor.ldr", "0 anchor", "3 15 0 0 0 0.01 0 0 0.02 0 0", ""]
 
 
 def _write(path, parts, anchors, subs, raw=()):
@@ -168,6 +168,22 @@ def _cam(lat, lon):
     return [math.sin(lo) * math.cos(la), -math.sin(la), -math.cos(lo) * math.cos(la)]
 
 
+def _free_side(bb, u, boxes, tol=6):
+    """С какой стороны деталь вставляется: туда, где она торчит из уже поставленных деталей, которых касается.
+    Штифт, торчащий из балки назад, ставят сзади - стрелка спереди сквозь балку показала бы не ту сторону
+    (Алексей 25.11: «должны быть с другой стороны балки»). +1/-1 вдоль u или None, если торчит поровну."""
+    k = max(range(3), key=lambda i: abs(u[i]))
+    hit = [q for q in boxes if all(min(bb[1][i], q[1][i]) - max(bb[0][i], q[0][i]) > 1 for i in range(3))]
+    if not hit:
+        return None
+    lo = min(q[0][k] for q in hit)
+    hi = max(q[1][k] for q in hit)
+    plus, minus = bb[1][k] - hi, lo - bb[0][k]
+    if abs(plus - minus) <= tol:
+        return None
+    return (1 if plus > minus else -1) * (1 if u[k] > 0 else -1)
+
+
 def explode(cum, new, lat=28, lon=-40, single=None):
     """Кадр шага как у LEGO: уже поставленные детали на месте, новые - отодвинуты вдоль своей оси наружу
     (туда, где меньше задевают старые), от каждой красная стрелка к месту установки."""
@@ -207,6 +223,9 @@ def explode(cum, new, lat=28, lon=-40, single=None):
             ov = _overlap(bb, [uu[i] * d for i in range(3)], boxes) / pv
             cand.append((ov > 0.25, -sum(uu[i] * cam[i] for i in range(3)), ov, uu))
         uu = min(cand)[3]          # без больших задеваний, и к камере: место установки видно, деталь не за балкой
+        side = _free_side(bb, u, boxes)
+        if side is not None:       # но сторона, откуда деталь реально ставится, важнее вида
+            uu = [side * x for x in u]
         parts.append(ldr.Part(p.name, p.color, [p.pos[i] + uu[i] * d for i in range(3)], p.rot))
         # как в оригинале LEGO: линия идёт от детали сквозь место установки (видна в дырке) и выходит с другой стороны
         tip = [p.pos[i] - uu[i] * (half + 22) for i in range(3)]
@@ -393,6 +412,15 @@ def _count_pages(fn, *args):
     return d.getPageNumber() - n0
 
 
+CAPTION_TOP = 9 * mm     # подпись шага внизу страницы (строка на 5 мм) - выше неё ничего из списка деталей
+
+
+def sub_box_h(y):
+    """Высота рамки узла в списке деталей, верх на y: 24 мм, а если места до подписи меньше - сколько есть (не меньше
+    12 мм). Раньше рамка шла ниже подписи и «1x Передний мост» наезжал на текст (Алексей 25.11)."""
+    return max(12 * mm, min(24 * mm, y - CAPTION_TOP))
+
+
 def count_parts(model):
     """Сколько деталей покупать/ставить: без V8 Алексея (готовый узел) и без верёвки (NOT_PARTS). Одно число для
     обложки и README."""
@@ -554,12 +582,13 @@ def build_pdf(model, out_pdf, spec):
                 if img:
                     c.setFillColorRGB(0.95, 0.97, 1.0)
                     c.setStrokeColorRGB(0.35, 0.55, 0.85)
-                    c.roundRect(6 * mm, y - 24 * mm, 34 * mm, 24 * mm, 1.5 * mm, stroke=1, fill=1)
-                    c.drawImage(img, 7 * mm, y - 21 * mm, 32 * mm, 19 * mm, preserveAspectRatio=True)
+                    hb = sub_box_h(y)
+                    c.roundRect(6 * mm, y - hb, 34 * mm, hb, 1.5 * mm, stroke=1, fill=1)
+                    c.drawImage(img, 7 * mm, y - hb + 3.5 * mm, 32 * mm, hb - 5 * mm, preserveAspectRatio=True)
                     c.setFillColorRGB(0.1, 0.1, 0.1)
                     c.setFont("AB", 8)
-                    c.drawString(7.5 * mm, y - 23.3 * mm, "1x " + sname)
-                    y -= 26 * mm
+                    c.drawString(7.5 * mm, y - hb + 1.2 * mm, "1x " + sname)
+                    y -= hb + 2 * mm
         if any(p.name.endswith(".ldr") and not p.name.startswith("__") for p in pli):
             c.setFont("AB", 8)
             c.drawString(6 * mm, y - 4 * mm, "Твой собранный V8")
