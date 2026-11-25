@@ -1,6 +1,7 @@
 """Законы модели и их мутанты: каждый закон на чистой модели зелёный и ловит свою поломку.
 Запуск: python test_laws.py   (без окон, только расчёт)
 """
+import collections
 import math
 import copy
 
@@ -550,3 +551,43 @@ def test_technic_brick_axis_is_holes():
     assert abs(u[1]) < 0.1 and abs(u[2]) > 0.9, u
     u = ins._axis(ldr.Part("3710.dat", 0, (0, 0, 0)))          # плитка 1x4 - только шипы
     assert u is None or abs(u[1]) > 0.9, u
+
+
+def test_no_pin_through_placed_parts():
+    """Ни на одной странице новый штифт не соединяет две детали, которые обе уже стоят (по точкам соединения): штифт с
+    буртиком сквозь стоящую деталь не воткнуть (Алексей 25.11: «пины должны пройти через две детали»)."""
+    import instructions as ins
+    for key in ins.MODELS:
+        m = ins.build_model(key)
+        pg = ins.pages(m)
+        allp = [p for p in m.parts() if p.name not in ins.NOT_PARTS and not p.name.endswith(".ldr")]
+        idx = {id(p): i for i, p in enumerate(allp)}
+        nb = collections.defaultdict(set)
+        for i, j in snaps.connections(allp):
+            nb[i].add(j)
+            nb[j].add(i)
+        bad = []
+        for sub, ttl, cum, new, anc, lon, pli in pg:
+            fresh = {id(p) for p in new}
+            placed = {idx[id(p)] for p in cum if id(p) not in fresh and id(p) in idx}
+            for p in new:
+                if p.name in car.PINS and id(p) in idx:
+                    olds = [j for j in nb[idx[id(p)]] if j in placed and allp[j].name not in car.PINS]
+                    if len(olds) >= ins.pin_layers(p.name):
+                        bad.append((ttl[:30], p.name, [round(v) for v in p.pos]))
+        assert not bad, (key, bad[:5])
+
+
+def test_regroup_moves_late_pin_before_second_part():
+    """Балка А (шаг 1), балка Б (шаг 2), штифт между ними (шаг 3) -> штифт переезжает в шаг 2 сразу за Б."""
+    import instructions as ins
+    m = ldr.Model("t.ldr")
+    m.step("А")
+    a = car.beam(m, 5, 0, (70, 0, 0), "z", "x")
+    m.step("Б")
+    b = car.beam(m, 5, 0, (90, 0, 0), "z", "x")
+    m.step("штифт")
+    pin = m.add("2780.dat", 0, (80, 0, 0))
+    assert ins.regroup_pins(m) == 1
+    assert m.steps[1].parts == [b, pin] and m.steps[2].parts == []
+    assert ins.regroup_pins(m) == 0                       # второй раз ничего не двигает

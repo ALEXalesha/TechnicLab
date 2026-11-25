@@ -395,16 +395,82 @@ def _rotate_icon(c, x, y):
     c.setLineWidth(0.6)
 
 
+def _touch(a, b, m=2):
+    return all(min(a[1][i], b[1][i]) - max(a[0][i], b[0][i]) > m for i in range(3))
+
+
 def _chunks(parts):
+    """Шаг на страницы по MAXN деталей, но штифт - всегда на одной странице со своей деталью: иначе балка на одной
+    странице, её штифты на следующей - и штифт должен пройти сквозь уже стоящую балку (Алексей 25.11)."""
     if len(parts) <= MAXN:
         return [parts]
+    big = [p for p in parts if p.name not in car.PINS]
+    clusters = {id(p): [p] for p in big}
+    order = [p for p in parts if p.name not in car.PINS]
+    for p in parts:
+        if p.name in car.PINS:
+            b = p.world_bbox()
+            own = next((q for q in big if b and q.world_bbox() and _touch(b, q.world_bbox())), None)
+            if own is None:
+                clusters[id(p)] = [p]
+                order.append(p)
+            else:
+                clusters[id(own)].append(p)
+    order.sort(key=lambda q: next(i for i, x in enumerate(parts) if x is q))
     n = (len(parts) + MAXN - 1) // MAXN
     k = (len(parts) + n - 1) // n
-    return [parts[i:i + k] for i in range(0, len(parts), k)]
+    out, cur = [], []
+    for q in order:
+        cl = clusters[id(q)]
+        if cur and len(cur) + len(cl) > k:
+            out.append(cur)
+            cur = []
+        cur += cl
+    if cur:
+        out.append(cur)
+    return out
+
+
+LONG_PINS = {"6558.dat", "32054.dat"}     # 3L: длинный конец (2L) проходит два слоя - буртик у одного края
+
+
+def pin_layers(name):
+    """Сколько уже стоящих деталей штифт может соединить, если его втыкают последним: 2L с буртиком посередине - одну,
+    3L - две (длинным концом сквозь обе)."""
+    return 3 if name in LONG_PINS else 2
+
+
+def regroup_pins(model):
+    """Штифт, соединяющий две детали, которые обе поставлены РАНЬШЕ него, переносится в шаг поздней из них, сразу за
+    ней: штифт с буртиком нельзя воткнуть сквозь уже стоящую деталь - сначала штифт, потом деталь на него."""
+    import snaps
+    flat = [(si, k, p) for si, st in enumerate(model.steps) for k, p in enumerate(st.parts)
+            if p.name not in NOT_PARTS and not p.name.endswith(".ldr")]
+    pairs = snaps.connections([p for _, _, p in flat])
+    nb = collections.defaultdict(list)
+    for i, j in pairs:
+        nb[i].append(j)
+        nb[j].append(i)
+    moves = []
+    for i, (si, k, p) in enumerate(flat):
+        if p.name not in car.PINS:
+            continue
+        partners = [flat[j] for j in nb[i] if flat[j][2].name not in car.PINS]
+        if len(partners) < pin_layers(p.name):
+            continue
+        sj, kj, q = max(partners, key=lambda t: (t[0], t[1]))
+        if sj < si and model.steps[sj].sub == model.steps[si].sub:
+            moves.append((p, si, q, sj))
+    for p, si, q, sj in moves:
+        model.steps[si].parts = [x for x in model.steps[si].parts if x is not p]
+        lst = model.steps[sj].parts
+        lst.insert(next(n for n, x in enumerate(lst) if x is q) + 1, p)
+    return len(moves)
 
 
 def pages(model):
     """Последовательность страниц: (узел, заголовок, все детали кадра, новые детали, метки, вид, PLI-элементы)."""
+    regroup_pins(model)
     steps = [s for s in model.steps if s.parts or s.attach]        # шаг «поставь узел» - и без своих деталей
     full = [p for s in steps for p in s.parts]
     subs = collections.OrderedDict()
