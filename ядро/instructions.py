@@ -190,6 +190,21 @@ def _free_side(bb, u, boxes, tol=6):
     return (1 if plus > minus else -1) * (1 if u[k] > 0 else -1)
 
 
+def insert_side(p, bb, u, boxes, new_boxes, mid, off=20):
+    """Сторона установки вдоль u (+1/-1) или None: 1) где деталь торчит из старых деталей; 2) где торчит из новых
+    этого шага (балка садится на штифты, которые торчат из лонжерона); 3) наружу от середины сборки. Без 2-3 балка,
+    не касавшаяся старых, ехала «к камере» - дальняя сквозь раму внутрь (Алексей 25.11: «пины явно не с той стороны»)."""
+    side = _free_side(bb, u, boxes)
+    if side is None:
+        side = _free_side(bb, u, boxes + [b for i, b in new_boxes if i != id(p)])
+    if side is None:
+        k = max(range(3), key=lambda i: abs(u[i]))
+        d = (bb[0][k] + bb[1][k]) / 2 - mid[k]
+        if abs(d) > off:
+            side = (1 if d > 0 else -1) * (1 if u[k] > 0 else -1)
+    return side
+
+
 def explode(cum, new, lat=28, lon=-40, single=None):
     """Кадр шага как у LEGO: уже поставленные детали на месте, новые - отодвинуты вдоль своей оси наружу
     (туда, где меньше задевают старые), от каждой красная стрелка к месту установки."""
@@ -197,6 +212,9 @@ def explode(cum, new, lat=28, lon=-40, single=None):
     old = [p for p in cum if id(p) not in fresh]
     boxes = [p.world_bbox() for p in old if p.world_bbox()]
     parts, raw = list(old), []
+    new_boxes = [(id(p), p.world_bbox()) for p in new if p.world_bbox()]
+    allb = boxes + [b for _, b in new_boxes]
+    mid = [(min(b[0][i] for b in allb) + max(b[1][i] for b in allb)) / 2 for i in range(3)] if allb else [0, 0, 0]
     vol = lambda p: (lambda b: (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) * (b[1][2] - b[0][2]) if b else 0)(p.world_bbox())
     biggest = max(new, key=vol) if new else None
     group = [p for p in new if single is not None and id(p) not in single]
@@ -229,7 +247,7 @@ def explode(cum, new, lat=28, lon=-40, single=None):
             ov = _overlap(bb, [uu[i] * d for i in range(3)], boxes) / pv
             cand.append((ov > 0.25, -sum(uu[i] * cam[i] for i in range(3)), ov, uu))
         uu = min(cand)[3]          # без больших задеваний, и к камере: место установки видно, деталь не за балкой
-        side = _free_side(bb, u, boxes)
+        side = insert_side(p, bb, u, boxes, new_boxes, mid)
         if side is not None:       # но сторона, откуда деталь реально ставится, важнее вида
             uu = [side * x for x in u]
         parts.append(ldr.Part(p.name, p.color, [p.pos[i] + uu[i] * d for i in range(3)], p.rot))

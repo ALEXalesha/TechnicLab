@@ -499,3 +499,20 @@ def test_step_view_applies():
         pg = ins.pages(ins.build_model(key))
         x = [x for x in pg if x[1].startswith("Центральный дифференциал и валы")]
         assert x and all(t[5] == ins.STEP_VIEW["Центральный дифференциал и валы"][1] for t in x), key
+
+
+def test_far_beam_not_pushed_through_frame():
+    """Багги, «Удлинители лонжеронов сзади»: обе балки 11 ждут СНАРУЖИ своих штифтов (|x| растёт), а не дальняя -
+    сквозь раму к камере (25.11: «пины явно не с той стороны»)."""
+    import instructions as ins
+    m = ins.build_model("багги")
+    for sub, ttl, cum, new, anc, lon, pli in ins.pages(m):
+        if ttl.startswith("Удлинители лонжеронов сзади"):
+            ex, _ = ins.explode(cum, new, 28, lon, {id(q) for q in pli})
+            beams = [e for e in ex[len(cum) - len(new):] if e.name == "32525.dat"]
+            assert len(beams) == 2
+            assert all(abs(e.pos[0]) >= 90 - 1e-6 for e in beams), [e.pos for e in beams]   # на месте или наружу
+            assert any(abs(e.pos[0]) > 90 + 20 for e in beams)                               # одна (не основа) отодвинута
+            break
+    else:
+        raise AssertionError("нет шага")
