@@ -393,6 +393,24 @@ def _count_pages(fn, *args):
     return d.getPageNumber() - n0
 
 
+COVER_COL = 45 * mm     # ширина колонки фактов на обложке (картинка - с 54 мм)
+
+
+def wrap(text, font, size, width):
+    """Строки не шире width: перенос после запятых (пункт списка не рвётся)."""
+    out, cur = [], ""
+    import re
+    for w_ in re.split(r"(?<=, )", text):
+        if cur and pdfmetrics.stringWidth(cur + w_, font, size) > width:
+            out.append(cur.rstrip())
+            cur = w_.lstrip()
+        else:
+            cur += w_
+    if cur:
+        out.append(cur.rstrip())
+    return out
+
+
 def cover(c, img, title, subtitle, facts, color):
     c.setFillColorRGB(*color)
     c.rect(0, H - 26 * mm, W, 26 * mm, stroke=0, fill=1)
@@ -404,7 +422,7 @@ def cover(c, img, title, subtitle, facts, color):
     c.drawString(26 * mm, H - 19.5 * mm, subtitle)
     c.setFont("AB", 8)
     c.drawRightString(W - 6 * mm, H - 6.5 * mm, "TechnicLab")
-    c.drawImage(img, 52 * mm, 4 * mm, W - 56 * mm, H - 32 * mm, preserveAspectRatio=True)
+    c.drawImage(img, 54 * mm, 10 * mm, W - 58 * mm, H - 38 * mm, preserveAspectRatio=True)
     y = H - 34 * mm
     for k, v in facts:
         c.setFillColorRGB(0.45, 0.45, 0.45)
@@ -412,8 +430,10 @@ def cover(c, img, title, subtitle, facts, color):
         c.drawString(7 * mm, y, k)
         c.setFillColorRGB(0.05, 0.05, 0.05)
         c.setFont("AB", 11)
-        c.drawString(7 * mm, y - 4.6 * mm, v)
-        y -= 11 * mm
+        for ln in wrap(v, "AB", 11, COVER_COL):        # колонка фактов не заходит под картинку
+            c.drawString(7 * mm, y - 4.6 * mm, ln)
+            y -= 5 * mm
+        y -= 6 * mm
     c.setFillColorRGB(0.4, 0.4, 0.4)
     c.setFont("A", 6.5)
     c.drawString(7 * mm, 5 * mm, "Своя модель из деталей Technic. LEGO - товарный знак LEGO Group, проект с ней не связан.")

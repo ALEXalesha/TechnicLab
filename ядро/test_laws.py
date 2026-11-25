@@ -413,3 +413,12 @@ def test_instruction_arrows_point_home():
             moved += 1
             assert sum(d[i] * cam[i] for i in range(3)) > 0, p.name
     assert moved >= 3
+
+
+def test_cover_facts_fit_column():
+    """Обложка: строки фактов не заходят под картинку (Алексей 25.11 - «Моторы и питание» лезли под модель)."""
+    import instructions as ins
+    for text in ("XL 1, серво 1, блок 1, приёмник 2, M 1, L 1", "L 2, M 1, блок 1, приёмник 1", "без мотора", "68 / 74"):
+        lines = ins.wrap(text, "AB", 11, ins.COVER_COL)
+        assert ", ".join(x.rstrip(",") for x in lines).replace(",,", ",") == text
+        assert all(ins.pdfmetrics.stringWidth(x, "AB", 11) <= ins.COVER_COL for x in lines)
