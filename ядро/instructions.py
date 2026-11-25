@@ -791,7 +791,7 @@ def make(key):
     _, n_scale, n_pages = build_pdf(m, ipad, spec)
     a4 = to_a4(ipad, os.path.join(folder, "%s - инструкция (A4).pdf" % spec["title"]), n_scale)
     print("%s: деталей %d, страниц %d, сборка ~%s, рендер %.0f с -> %s, %s" % (
-        key, sum(1 for p in m.parts() if p.name != "v4.ldr"), n_pages, _fmt_time(build_minutes(len(m.parts()))),
+        key, count_parts(m), n_pages, _fmt_time(build_minutes(count_parts(m))),
         time.time() - t0, os.path.basename(ipad), os.path.basename(a4)), flush=True)
 
 
